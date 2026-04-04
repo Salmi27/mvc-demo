@@ -1,0 +1,87 @@
+# Build artifacts
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+
+# Rider files
+.idea/
+*.sln.iml
+
+# ASP.NET Core runtime
+appsettings*.json
+wwwroot/lib/**
+
+# Publish outputs
+publish/
+*.Publish.xml
+
+# NuGet
+*.nupkg
+*.snupkg
+project.lock.json
+project.assets.json
+*.nuget.props
+*.nuget.targets
+packages/
+.nuget/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Visual Studio Code
+.vscode/
+
+# IIS Express
+/.vs/**/applicationhost.config
+/.vs/**/iisexpress.json
+/.vs/**/v16/*
+
+# User-specific files
+*.rsuser
+*.psess
+*.vsp
+*.vspscc
+*_i.c
+*_p.c
+*_h.h
+*.dbmdl
+*.bak
+*.backup
+
+# Logs and temp files
+*.log
+*.tlog
+*.tmp
+*.temp
+*.cache
+
+# Generated static web assets
+obj/**/StaticWebAssets/**
+
+# DotCover
+*.dotCover
+
+# EF Core Migrations history
+Migrations/**/ModelSnapshot.cs
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Rider cache
+.idea/
+
+# Others
+*.db
+*.sqlite
+
+# Keep your source code and configuration files under version control, but ignore local build outputs and user machine files.
