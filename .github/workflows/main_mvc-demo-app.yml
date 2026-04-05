@@ -13,32 +13,43 @@ jobs:
       contents: read
 
     steps:
-      # 📥 Checkout repository
-      - name: Checkout code
+      # 📥 Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ⚙️ Setup .NET 10
+      # ⚙️ Setup .NET 10 (preview)
       - name: Set up .NET 10
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-          include-prerelease: true   # 🔥 important for preview versions
+          include-prerelease: true
+
+      # 🔍 Debug: show repo structure
+      - name: List repo files
+        run: dir
 
       # 🔄 Restore dependencies
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore
 
-      # 🔨 Build project
+      # 🔨 Build
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      # 📦 Publish app
+      # 📦 Publish (FIXED: targets actual project)
       - name: Publish
-        run: dotnet publish --configuration Release --output ./publish --no-build
+        run: dotnet publish **/*.csproj --configuration Release --output ./publish
 
-      # 🧪 Debug: verify files exist
-      - name: List published files
-        run: dir ./publish
+      # 🧪 Debug: check publish folder
+      - name: Verify publish folder
+        run: |
+          if (Test-Path ./publish) {
+            Write-Host "Publish folder exists"
+            dir ./publish
+          } else {
+            Write-Host "Publish folder NOT found!"
+            exit 1
+          }
 
       # 📤 Upload artifact
       - name: Upload artifact
@@ -61,7 +72,7 @@ jobs:
         with:
           name: app-package
 
-      # 🧪 Debug: verify artifact contents
+      # 🧪 Debug: verify downloaded files
       - name: List downloaded files
         run: dir
 
