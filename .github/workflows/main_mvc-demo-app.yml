@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy ASP.Net Core app to Azure Web App - mvc-demo-app
 
 on:
@@ -13,53 +10,73 @@ jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      # 📥 Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up .NET Core
+      # ⚙️ Setup .NET 10
+      - name: Set up .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'
+          dotnet-version: '10.0.x'
+          include-prerelease: true   # 🔥 important for preview versions
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      # 🔄 Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      # 🔨 Build project
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
 
-      - name: Upload artifact for deployment job
+      # 📦 Publish app
+      - name: Publish
+        run: dotnet publish --configuration Release --output ./publish --no-build
+
+      # 🧪 Debug: verify files exist
+      - name: List published files
+        run: dir ./publish
+
+      # 📤 Upload artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          name: app-package
+          path: ./publish
 
   deploy:
     runs-on: windows-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
-      - name: Download artifact from build job
+      # 📥 Download artifact
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
-      
+          name: app-package
+
+      # 🧪 Debug: verify artifact contents
+      - name: List downloaded files
+        run: dir
+
+      # 🔐 Login to Azure
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B97F1282156949F4B403117C0AC1AF17 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_7E48A432E2924142B9B38AD3727C7FDF }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_915ED801767343F2B15FDBF8B9397027 }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      # 🌐 Deploy to Azure Web App
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'mvc-demo-app'
-          slot-name: 'Production'
+          app-name: mvc-demo-app
+          slot-name: Production
           package: .
-          
