@@ -1,0 +1,93 @@
+name: Build and deploy ASP.Net Core app to Azure Web App - mvc-demo-app
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      # 📥 Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ⚙️ Setup .NET 10 (preview)
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          include-prerelease: true
+
+      # 🔍 Debug: show repo structure
+      - name: List repo files
+        run: dir
+
+      # 🔄 Restore dependencies
+      - name: Restore
+        run: dotnet restore
+
+      # 🔨 Build
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      # 📦 Publish (FIXED: targets actual project)
+      - name: Publish
+        run: dotnet publish ./mvc-demo/mvc-demo.csproj --configuration Release --output ./publish
+
+      # 🧪 Debug: check publish folder
+      - name: Verify publish folder
+        run: |
+          if (Test-Path ./publish) {
+            Write-Host "Publish folder exists"
+            dir ./publish
+          } else {
+            Write-Host "Publish folder NOT found!"
+            exit 1
+          }
+
+      # 📤 Upload artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-package
+          path: ./publish
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      # 📥 Download artifact
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-package
+
+      # 🧪 Debug: verify downloaded files
+      - name: List downloaded files
+        run: dir
+
+      # 🔐 Login to Azure
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # 🌐 Deploy to Azure Web App
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: mvc-demo-app
+          slot-name: Production
+          package: .
